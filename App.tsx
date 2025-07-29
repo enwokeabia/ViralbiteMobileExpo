@@ -1,5 +1,11 @@
-import RestaurantFeed from './src/components/RestaurantFeed';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import TabNavigator from './src/navigation/TabNavigator';
 
 export default function App() {
-  return <RestaurantFeed />;
+  return (
+    <NavigationContainer>
+      <TabNavigator />
+    </NavigationContainer>
+  );
 }

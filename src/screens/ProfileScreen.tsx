@@ -1,0 +1,240 @@
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { debugFirebase, testRestaurantLoading } from '../utils/debugFirebase';
+import { simpleFirestoreTest, testFirestoreConnection } from '../utils/simpleTest';
+
+export default function ProfileScreen() {
+  const handleDebugFirebase = async () => {
+    try {
+      const result = await debugFirebase();
+      if (result.success) {
+        Alert.alert(
+          '🔍 Debug Results',
+          `Simple query: ${result.simpleCount} restaurants\nActive query: ${result.activeCount} restaurants\n\nCheck console for details.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('❌ Debug Failed', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Debug failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  const handleTestLoading = async () => {
+    try {
+      const result = await testRestaurantLoading();
+      if (result.success) {
+        Alert.alert(
+          '🍽️ Loading Test Results',
+          `Simple approach: ${result.simpleRestaurants?.length || 0} restaurants\nActive filter: ${result.activeRestaurants?.length || 0} restaurants\n\nCheck console for details.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('❌ Loading Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Loading test failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  const handleSimpleTest = async () => {
+    try {
+      const result = await simpleFirestoreTest();
+      if (result.success) {
+        Alert.alert(
+          '🧪 Simple Test Results',
+          `Found ${result.count} documents in restaurants collection.\n\nCheck console for details.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('❌ Simple Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Simple test failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  const handleConnectionTest = async () => {
+    try {
+      const result = await testFirestoreConnection();
+      if (result.success) {
+        Alert.alert('✅ Connection Test Passed!', 'Firestore connection is working.', [{ text: 'OK' }]);
+      } else {
+        Alert.alert('❌ Connection Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Connection test failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Profile</Text>
+      <ScrollView style={styles.content}>
+        {/* User Info Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          <View style={styles.profileCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>👤</Text>
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Guest User</Text>
+              <Text style={styles.userEmail}>guest@example.com</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Settings Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Settings</Text>
+          <Pressable style={styles.settingItem}>
+            <Text style={styles.settingText}>Notifications</Text>
+            <Text style={styles.settingArrow}>›</Text>
+          </Pressable>
+          <Pressable style={styles.settingItem}>
+            <Text style={styles.settingText}>Location Services</Text>
+            <Text style={styles.settingArrow}>›</Text>
+          </Pressable>
+          <Pressable style={styles.settingItem}>
+            <Text style={styles.settingText}>Privacy Policy</Text>
+            <Text style={styles.settingArrow}>›</Text>
+          </Pressable>
+          <Pressable style={styles.settingItem}>
+            <Text style={styles.settingText}>Terms of Service</Text>
+            <Text style={styles.settingArrow}>›</Text>
+          </Pressable>
+        </View>
+
+        {/* Stats Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Stats</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>5</Text>
+              <Text style={styles.statLabel}>Bookings</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>$15</Text>
+              <Text style={styles.statLabel}>Total Saved</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingTop: 80,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  profileCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e9ecef',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 24,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#666',
+  },
+  settingItem: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  settingText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+  },
+  settingArrow: {
+    fontSize: 18,
+    color: '#666',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#ccc',
+  },
+}); 

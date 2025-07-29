@@ -1,17 +1,20 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
-  // Add your config here (from web app)
-  apiKey: "your-api-key",
-  authDomain: "your-auth-domain", 
-  projectId: "your-project-id",
-  storageBucket: "your-storage-bucket",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id"
-};
+    apiKey: "AIzaSyC1zDSWLYeSxm5hpf013TXL6UkdqrzVH4w",
+    authDomain: "viralbite-mobile.firebaseapp.com",
+    projectId: "viralbite-mobile",
+    storageBucket: "viralbite-mobile.firebasestorage.app",
+    messagingSenderId: "673595596591",
+    appId: "1:673595596591:web:49533090273b042d614bda"
+  };  
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app); 
+export const db = getFirestore(app);
+
+// Add some debugging
+console.log('🔥 Firebase initialized with project:', firebaseConfig.projectId);
+console.log('📊 Firestore instance created'); 
