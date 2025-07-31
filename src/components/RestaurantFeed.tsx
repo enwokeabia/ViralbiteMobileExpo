@@ -93,7 +93,7 @@ export default function RestaurantFeed() {
     alert(`🎉 Table reserved at ${selectedRestaurant?.name}!\nYou saved ${selectedRestaurant?.discount}!`);
   };
 
-  const handleTimeSlotPress = (restaurant: any, timeSlot: string) => {
+  const handleTimeSlotPress = (restaurant: Restaurant, timeSlot: TimeSlot) => {
     setSelectedRestaurant(restaurant);
     setSelectedTimeSlot(timeSlot);
     setShowBookingModal(true);

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { debugFirebase, testRestaurantLoading } from '../utils/debugFirebase';
 import { simpleFirestoreTest, testFirestoreConnection } from '../utils/simpleTest';
+import { writeTestRestaurant, writeMultipleTestRestaurants } from '../utils/directWrite';
 
 export default function ProfileScreen() {
   const handleDebugFirebase = async () => {
@@ -65,6 +66,40 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       Alert.alert('❌ Error', 'Connection test failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  const handleWriteTestRestaurant = async () => {
+    try {
+      const result = await writeTestRestaurant();
+      if (result.success) {
+        Alert.alert(
+          '✅ Write Test Passed!', 
+          `Restaurant written successfully!\nDocument ID: ${result.documentId}\n\nCheck your Feed tab now!`, 
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('❌ Write Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Write test failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  const handleWriteMultipleRestaurants = async () => {
+    try {
+      const result = await writeMultipleTestRestaurants();
+      if (result.success) {
+        Alert.alert(
+          '✅ Multiple Write Test Passed!', 
+          result.message + '\n\nCheck your Feed tab now!', 
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('❌ Multiple Write Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Multiple write test failed.', [{ text: 'OK' }]);
     }
   };
 
