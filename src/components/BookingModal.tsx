@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, ScrollView, Alert } from 'react-native';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -16,6 +16,13 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
   const [guests, setGuests] = useState(2);
   const [selectedDate, setSelectedDate] = useState('Today');
   const [isBooking, setIsBooking] = useState(false);
+
+  // Update selected time when initialTime prop changes
+  useEffect(() => {
+    if (initialTime) {
+      setSelectedTime(initialTime);
+    }
+  }, [initialTime]);
 
   const timeSlots = ['12:00', '12:30', '13:00', '13:30', '18:00', '18:30', '19:00', '19:30'];
   const guestOptions = [1, 2, 3, 4, 5, 6];

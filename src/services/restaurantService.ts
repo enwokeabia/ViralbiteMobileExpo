@@ -15,6 +15,7 @@ export interface Restaurant {
   rating: number; // 1-5 stars
   priceRange: string; // "$", "$$", "$$$"
   isActive: boolean;
+  timeSlots?: any[]; // Time slots for the restaurant
   createdAt: Date;
   updatedAt: Date;
 }

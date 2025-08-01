@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-nati
 import { debugFirebase, testRestaurantLoading } from '../utils/debugFirebase';
 import { simpleFirestoreTest, testFirestoreConnection } from '../utils/simpleTest';
 import { writeTestRestaurant, writeMultipleTestRestaurants } from '../utils/directWrite';
+import { addTimeSlotsToRestaurant } from '../utils/addTimeSlots';
 
 export default function ProfileScreen() {
   const handleDebugFirebase = async () => {
@@ -96,10 +97,27 @@ export default function ProfileScreen() {
           [{ text: 'OK' }]
         );
       } else {
-        Alert.alert('❌ Multiple Write Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
+                Alert.alert('❌ Multiple Write Test Failed', 'Check console for error details.', [{ text: 'OK' }]);
       }
     } catch (error) {
       Alert.alert('❌ Error', 'Multiple write test failed.', [{ text: 'OK' }]);
+    }
+  };
+
+  const handleAddTimeSlots = async () => {
+    try {
+      const success = await addTimeSlotsToRestaurant('XgNKGQcLefqTI2tINCW9');
+      if (success) {
+        Alert.alert(
+          '✅ Time Slots Added!', 
+          'Time slots have been added to your restaurant.\n\nCheck your Feed tab now!', 
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('❌ Failed to Add Time Slots', 'Check console for error details.', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      Alert.alert('❌ Error', 'Failed to add time slots.', [{ text: 'OK' }]);
     }
   };
 
@@ -155,6 +173,15 @@ export default function ProfileScreen() {
               <Text style={styles.statLabel}>Total Saved</Text>
             </View>
           </View>
+        </View>
+
+        {/* Debug Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Debug Tools</Text>
+          <Pressable style={styles.settingItem} onPress={handleAddTimeSlots}>
+            <Text style={styles.settingText}>Add Time Slots to Restaurant</Text>
+            <Text style={styles.settingArrow}>›</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </View>

@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, Dimensions, ScrollView, Pressable } from 'react
 import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import { Ionicons } from '@expo/vector-icons';
 import BookingModal from './BookingModal';
-import { getRestaurants, getRestaurantsByCuisine, Restaurant } from '../services/restaurantService';
+import GoogleGIcon from './GoogleGIcon';
+import { getRestaurants, getRestaurantsByCuisine, Restaurant, TimeSlot } from '../services/restaurantService';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
@@ -90,12 +92,12 @@ export default function RestaurantFeed() {
     setShowBookingModal(false);
     
     // Show success message (you can customize this)
-    alert(`🎉 Table reserved at ${selectedRestaurant?.name}!\nYou saved ${selectedRestaurant?.discount}!`);
+    alert(`🎉 Table reserved at ${selectedRestaurant?.name}!\nYou saved ${selectedRestaurant?.discountPercentage}%!`);
   };
 
-  const handleTimeSlotPress = (restaurant: Restaurant, timeSlot: TimeSlot) => {
+  const handleTimeSlotPress = (restaurant: Restaurant, timeSlot: any) => {
     setSelectedRestaurant(restaurant);
-    setSelectedTimeSlot(timeSlot);
+    setSelectedTimeSlot(timeSlot.time || timeSlot);
     setShowBookingModal(true);
   };
 
@@ -214,17 +216,64 @@ export default function RestaurantFeed() {
               <View style={styles.restaurantDetails}>
                 <Text style={styles.restaurantName}>{restaurant.name}</Text>
                 <Text style={styles.cuisine}>{restaurant.cuisine} • {restaurant.location}</Text>
-                <Text style={styles.description}>{restaurant.description}</Text>
+                <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">{restaurant.description}</Text>
+                <Text style={styles.averagePrice}>Average price ${restaurant.priceRange === '$$' ? '19' : restaurant.priceRange === '$$$' ? '35' : restaurant.priceRange === '$$$$' ? '60' : '12'}</Text>
                 
-                {/* Discount badge */}
-                <View style={styles.discountBadge}>
-                  <Text style={styles.discountText}>🔥 -{restaurant.discountPercentage}%</Text>
+                {/* Rating */}
+                <View style={styles.ratingContainer}>
+                  <View style={styles.ratingPill}>
+                    <GoogleGIcon size={12} />
+                    <Text style={styles.ratingText}>{restaurant.rating}</Text>
+                    <Text style={styles.starIcon}>⭐</Text>
+                  </View>
                 </View>
               </View>
               
-              {/* Time Slot Chips - Will be loaded from Firebase */}
-              <View style={styles.timeSlotPlaceholder}>
-                <Text style={styles.timeSlotPlaceholderText}>Loading time slots...</Text>
+              {/* Discount badge */}
+              <View style={styles.discountBadge}>
+                <Text style={styles.discountText}>🔥 -{restaurant.discountPercentage}% off food</Text>
+              </View>
+              
+              {/* Time Slot Chips */}
+              <View style={styles.timeSlotScroll}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {restaurant.timeSlots && restaurant.timeSlots.length > 0 ? (
+                    restaurant.timeSlots.map((timeSlot: any, slotIndex: number) => (
+                      <React.Fragment key={slotIndex}>
+                        <Pressable
+                          style={styles.timeSlotContainer}
+                          onPress={() => handleTimeSlotPress(restaurant, timeSlot)}
+                        >
+                          <Text style={styles.timeSlotText}>{timeSlot.time || timeSlot}</Text>
+                          <View style={styles.discountContainer}>
+                            <Text style={styles.discountLabel}>-{restaurant.discountPercentage}%</Text>
+                          </View>
+                        </Pressable>
+                        {slotIndex < (restaurant.timeSlots?.length || 0) - 1 && (
+                          <View style={styles.timeSlotDivider} />
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    // Default time slots if none are set
+                    ['18:00', '18:30', '19:00', '19:30'].map((time, index) => (
+                      <React.Fragment key={index}>
+                        <Pressable
+                          style={styles.timeSlotContainer}
+                          onPress={() => handleTimeSlotPress(restaurant, { time })}
+                        >
+                          <Text style={styles.timeSlotText}>{time}</Text>
+                          <View style={styles.discountContainer}>
+                            <Text style={styles.discountLabel}>-{restaurant.discountPercentage}%</Text>
+                          </View>
+                        </Pressable>
+                        {index < 3 && (
+                          <View style={styles.timeSlotDivider} />
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
+                </ScrollView>
               </View>
             </View>
           </View>
@@ -250,24 +299,24 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     position: 'absolute',
-    top: 60,
+    top: 70,
     left: 0,
     right: 0,
     zIndex: 1000,
-    paddingHorizontal: 0,
+    paddingHorizontal: 16,
   },
   filterScroll: {
     flexGrow: 0,
   },
   filterChip: {
     backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 25,
-    marginHorizontal: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginHorizontal: 4,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
-    minWidth: 100,
+    minWidth: 70,
   },
   filterChipSelected: {
     backgroundColor: 'white',
@@ -275,7 +324,7 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     textAlign: 'center',
   },
@@ -316,25 +365,58 @@ const styles = StyleSheet.create({
   },
   cuisine: {
     fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.95)',
     marginBottom: 8,
   },
   description: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
-    marginBottom: 15,
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 8,
+  },
+  address: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 8,
+  },
+  averagePrice: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 10,
   },
   discountBadge: {
     backgroundColor: 'rgba(255,59,48,0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
     alignSelf: 'flex-start',
+    marginBottom: 8,
   },
   discountText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  ratingContainer: {
+    marginBottom: 0,
+  },
+  ratingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    gap: 4,
+  },
+  ratingText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  starIcon: {
+    fontSize: 10,
   },
   timeSlot: {
     color: 'white',
@@ -354,27 +436,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   timeSlotScroll: {
-    marginTop: 15,
+    marginTop: 8,
   },
-  timeSlotChip: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 25,
+  timeSlotContainer: {
     marginRight: 12,
     alignItems: 'center',
-    minWidth: 80,
+    minWidth: 60,
+  },
+  timeSlotDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    marginHorizontal: 6,
   },
   timeSlotText: {
-    color: 'black',
+    color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  timeSlotLabel: {
-    color: '#007AFF',
+  discountContainer: {
+    backgroundColor: 'white',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  discountLabel: {
+    color: 'black',
     fontSize: 10,
     fontWeight: 'bold',
-    marginTop: 2,
   },
   timeSlotPlaceholder: {
     marginTop: 15,
