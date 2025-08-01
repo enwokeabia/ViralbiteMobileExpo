@@ -16,6 +16,9 @@ export interface Restaurant {
   priceRange: string; // "$", "$$", "$$$"
   isActive: boolean;
   timeSlots?: any[]; // Time slots for the restaurant
+  latitude?: number; // Restaurant coordinates
+  longitude?: number; // Restaurant coordinates
+  distance?: number; // Calculated distance from user
   createdAt: Date;
   updatedAt: Date;
 }

@@ -70,6 +70,7 @@ export default function RestaurantFeed() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const [selectedVibe, setSelectedVibe] = useState('Dining');
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,40 +152,96 @@ export default function RestaurantFeed() {
 
   const loadLocation = async () => {
     try {
+      console.log('🔍 Requesting location permission...');
       let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log('📱 Permission status:', status);
+      
       if (status !== 'granted') {
-        console.log('Permission to access location was denied');
+        console.log('❌ Permission to access location was denied');
         return;
       }
 
+      console.log('📍 Getting current position...');
       let location = await Location.getCurrentPositionAsync({});
       setUserLocation(location);
+      console.log('✅ Location loaded:', location.coords);
     } catch (error) {
-      console.error('Error loading location:', error);
+      console.error('❌ Error loading location:', error);
     }
   };
 
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Sort restaurants by distance if location is available
+  const getSortedRestaurants = () => {
+    if (!userLocation) return restaurants;
+    
+    return restaurants.map(restaurant => ({
+      ...restaurant,
+      distance: calculateDistance(
+        userLocation.coords.latitude,
+        userLocation.coords.longitude,
+        restaurant.latitude || 0,
+        restaurant.longitude || 0
+      )
+    })).sort((a, b) => (a.distance || 999) - (b.distance || 999));
+  };
+
+  // Get sorted restaurants (by distance if location available)
+  const sortedRestaurants = getSortedRestaurants();
+  
   // Filter restaurants based on selected cuisine (now handled by Firebase)
-  const filteredRestaurants = restaurants;
+  const filteredRestaurants = sortedRestaurants;
 
   return (
     <>
-      {/* Full-width Cuisine Filters */}
-      <View style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
-          {cuisineTypes.map(cuisine => (
+      {/* Vibe Filters */}
+      <View style={styles.vibeFilterContainer}>
+        <View style={styles.vibeFilterRow}>
+          {['Dining', 'Brunch', 'Happy Hour'].map(vibe => (
             <Pressable
-              key={cuisine}
-              style={[styles.filterChip, selectedCuisine === cuisine && styles.filterChipSelected]}
-              onPress={() => setSelectedCuisine(cuisine)}
+              key={vibe}
+              style={styles.vibeFilterItem}
+              onPress={() => setSelectedVibe(vibe)}
             >
-              <Text style={[styles.filterText, selectedCuisine === cuisine && styles.filterTextSelected]}>
-                {cuisine}
+              <Text style={[styles.vibeFilterText, selectedVibe === vibe && styles.vibeFilterTextActive]}>
+                {vibe}
               </Text>
+              {selectedVibe === vibe && <View style={styles.vibeFilterUnderline} />}
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
       </View>
+
+      {/* Cuisine Filters - Only show when Dining is selected */}
+      {selectedVibe === 'Dining' && (
+        <View style={styles.filterContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+            {cuisineTypes.map(cuisine => (
+              <Pressable
+                key={cuisine}
+                style={[styles.filterChip, selectedCuisine === cuisine && styles.filterChipSelected]}
+                onPress={() => setSelectedCuisine(cuisine)}
+              >
+                <Text style={[styles.filterText, selectedCuisine === cuisine && styles.filterTextSelected]}>
+                  {cuisine}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       <ScrollView
         ref={scrollViewRef}
@@ -219,20 +276,32 @@ export default function RestaurantFeed() {
                 <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">{restaurant.description}</Text>
                 <Text style={styles.averagePrice}>Average price ${restaurant.priceRange === '$$' ? '19' : restaurant.priceRange === '$$$' ? '35' : restaurant.priceRange === '$$$$' ? '60' : '12'}</Text>
                 
-                {/* Rating */}
-                <View style={styles.ratingContainer}>
-                  <View style={styles.ratingPill}>
-                    <GoogleGIcon size={12} />
-                    <Text style={styles.ratingText}>{restaurant.rating}</Text>
-                    <Text style={styles.starIcon}>⭐</Text>
-                  </View>
+                              {/* Rating and Distance */}
+              <View style={styles.ratingContainer}>
+                <View style={styles.ratingPill}>
+                  <GoogleGIcon size={12} />
+                  <Text style={styles.ratingText}>{restaurant.rating}</Text>
+                  <Text style={styles.starIcon}>⭐</Text>
                 </View>
+                {userLocation && restaurant.distance && (
+                  <View style={styles.distancePill}>
+                    <Text style={styles.distanceText}>{restaurant.distance.toFixed(1)} miles away</Text>
+                  </View>
+                )}
+              </View>
               </View>
               
-              {/* Discount badge */}
-              <View style={styles.discountBadge}>
-                <Text style={styles.discountText}>🔥 -{restaurant.discountPercentage}% off food</Text>
-              </View>
+                              {/* Discount badge */}
+                <Pressable 
+                  style={styles.discountBadge}
+                  onPress={() => {
+                    setSelectedRestaurant(restaurant);
+                    setSelectedTimeSlot(''); // No pre-filled time
+                    setShowBookingModal(true);
+                  }}
+                >
+                  <Text style={styles.discountText}>🔥 -{restaurant.discountPercentage}% off food</Text>
+                </Pressable>
               
               {/* Time Slot Chips */}
               <View style={styles.timeSlotScroll}>
@@ -297,9 +366,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'black',
   },
-  filterContainer: {
+  vibeFilterContainer: {
     position: 'absolute',
     top: 70,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    paddingHorizontal: 16,
+  },
+  vibeFilterRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  vibeFilterItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  vibeFilterText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  vibeFilterTextActive: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  vibeFilterUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    left: 20,
+    right: 20,
+    height: 2,
+    backgroundColor: 'white',
+    borderRadius: 1,
+  },
+  filterContainer: {
+    position: 'absolute',
+    top: 120,
     left: 0,
     right: 0,
     zIndex: 1000,
@@ -398,6 +504,9 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     marginBottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   ratingPill: {
     flexDirection: 'row',
@@ -417,6 +526,17 @@ const styles = StyleSheet.create({
   },
   starIcon: {
     fontSize: 10,
+  },
+  distancePill: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  distanceText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 11,
+    fontWeight: '500',
   },
   timeSlot: {
     color: 'white',
