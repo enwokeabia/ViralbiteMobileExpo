@@ -189,54 +189,39 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
         </View>
 
         <ScrollView style={styles.content}>
-          {/* Restaurant hero section with background image */}
-          <View style={styles.heroSection}>
-            {restaurant?.imageUrl ? (
-              <Image 
-                source={{ uri: restaurant.imageUrl }} 
-                style={styles.heroBackgroundImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.heroPlaceholder}>
-                <Text style={styles.heroPlaceholderText}>🍽️</Text>
-              </View>
-            )}
+          {/* Restaurant details above image */}
+          <View style={styles.restaurantDetails}>
+            <Text style={styles.restaurantName}>{restaurant?.name}</Text>
             
-            {/* Gradient overlay for better text readability */}
-            <LinearGradient
-              colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.6)']}
-              style={styles.heroOverlay}
-            />
+            {/* Address */}
+            <View style={styles.locationRow}>
+              <Text style={styles.locationIcon}>📍</Text>
+              <Text style={styles.locationText}>{restaurant?.address || restaurant?.location}</Text>
+            </View>
             
-            {/* Restaurant name and address overlaid on image */}
-            <View style={styles.heroContent}>
-              <Text style={styles.heroRestaurantName}>{restaurant?.name}</Text>
-              <View style={styles.locationRow}>
-                <Text style={styles.locationIcon}>📍</Text>
-                <Text style={styles.heroLocation}>{restaurant?.address || restaurant?.location}</Text>
-              </View>
+            {/* Rating, cuisine, and price */}
+            <View style={styles.detailsRow}>
+              {restaurant?.rating && (
+                <Text style={styles.ratingText}>⭐ {restaurant.rating}</Text>
+              )}
+              <Text style={styles.cuisineText}>{restaurant?.cuisine || 'Restaurant'}</Text>
+              <Text style={styles.priceText}>• {restaurant?.priceRange || '$$'}</Text>
             </View>
           </View>
 
-          {/* Restaurant details section underneath */}
-          <View style={styles.detailsSection}>
-            {/* Rating */}
-            {restaurant?.rating && (
-              <View style={styles.ratingRow}>
-                <Text style={styles.ratingText}>⭐ {restaurant.rating}</Text>
+          {/* Restaurant image */}
+          <View style={styles.imageSection}>
+            {restaurant?.imageUrl ? (
+              <Image 
+                source={{ uri: restaurant.imageUrl }} 
+                style={styles.restaurantImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Text style={styles.placeholderText}>🍽️</Text>
               </View>
             )}
-            
-            {/* Cuisine and price info */}
-            <View style={styles.cuisinePriceRow}>
-              <View style={styles.cuisineContainer}>
-                <Text style={styles.cuisineIcon}>🍴</Text>
-                <Text style={styles.cuisineText}>{restaurant?.cuisine || 'Restaurant'}</Text>
-              </View>
-              <Text style={styles.cuisineSeparator}>•</Text>
-              <Text style={styles.priceText}>Average price {restaurant?.priceRange || '$$'}</Text>
-            </View>
           </View>
 
           {/* Guest count */}
@@ -344,19 +329,62 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  heroSection: {
-    height: 250, // Fixed height for the hero section
+  restaurantDetails: {
+    marginBottom: 20,
+  },
+  restaurantName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  locationIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginRight: 10,
+  },
+  cuisineText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  priceText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  imageSection: {
+    height: 200, // Fixed height for the image section
     borderRadius: 15,
     overflow: 'hidden',
     marginBottom: 20,
     position: 'relative',
   },
-  heroBackgroundImage: {
+  restaurantImage: {
     width: '100%',
     height: '100%',
     borderRadius: 15,
   },
-  heroPlaceholder: {
+  imagePlaceholder: {
     width: '100%',
     height: '100%',
     borderRadius: 15,
@@ -364,73 +392,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  heroPlaceholderText: {
+  placeholderText: {
     fontSize: 32,
-  },
-  heroOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 15,
-  },
-  heroContent: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    zIndex: 1,
-  },
-  detailsSection: {
-    marginBottom: 20,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  ratingText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  heroRestaurantName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 5,
-  },
-  cuisinePriceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cuisineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e9ecef',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  cuisineIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  cuisineText: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: 'bold',
-  },
-  cuisineSeparator: {
-    fontSize: 14,
-    color: '#666',
-    marginHorizontal: 5,
-  },
-  priceText: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: 'bold',
   },
   section: {
     marginBottom: 25,
@@ -520,19 +483,5 @@ const styles = StyleSheet.create({
   },
   dateButtonTextSelected: {
     color: 'white',
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 5,
-  },
-  locationIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  heroLocation: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: 'bold',
   },
 }); 
