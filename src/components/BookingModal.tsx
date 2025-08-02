@@ -209,31 +209,24 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
               style={styles.heroOverlay}
             />
             
-            {/* Only restaurant name overlaid on image */}
+            {/* Restaurant name and address overlaid on image */}
             <View style={styles.heroContent}>
               <Text style={styles.heroRestaurantName}>{restaurant?.name}</Text>
+              <View style={styles.locationRow}>
+                <Text style={styles.locationIcon}>📍</Text>
+                <Text style={styles.heroLocation}>{restaurant?.address || restaurant?.location}</Text>
+              </View>
             </View>
           </View>
 
           {/* Restaurant details section underneath */}
           <View style={styles.detailsSection}>
-            {/* Badges row */}
-            <View style={styles.badgesRow}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>🔥 {restaurant?.discountPercentage}% OFF</Text>
+            {/* Rating */}
+            {restaurant?.rating && (
+              <View style={styles.ratingRow}>
+                <Text style={styles.ratingText}>⭐ {restaurant.rating}</Text>
               </View>
-              {restaurant?.rating && (
-                <View style={styles.ratingBadge}>
-                  <Text style={styles.ratingBadgeText}>⭐ {restaurant.rating}</Text>
-                </View>
-              )}
-            </View>
-            
-            {/* Location with icon */}
-            <View style={styles.locationRow}>
-              <Text style={styles.locationIcon}>📍</Text>
-              <Text style={styles.locationText}>{restaurant?.address || restaurant?.location}</Text>
-            </View>
+            )}
             
             {/* Cuisine and price info */}
             <View style={styles.cuisinePriceRow}>
@@ -389,58 +382,23 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   detailsSection: {
-    backgroundColor: '#f9f9f9',
-    padding: 20,
-    borderRadius: 15,
     marginBottom: 20,
   },
-  badgesRow: {
+  ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  badge: {
-    backgroundColor: '#ff3b30',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 12,
+  ratingText: {
+    fontSize: 16,
     fontWeight: 'bold',
-  },
-  ratingBadge: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  ratingBadgeText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#333',
   },
   heroRestaurantName: {
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 5,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  locationIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#333',
-    flex: 1,
   },
   cuisinePriceRow: {
     flexDirection: 'row',
@@ -562,5 +520,19 @@ const styles = StyleSheet.create({
   },
   dateButtonTextSelected: {
     color: 'white',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  locationIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  heroLocation: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: 'bold',
   },
 }); 
