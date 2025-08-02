@@ -189,38 +189,58 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
         </View>
 
         <ScrollView style={styles.content}>
-          {/* Restaurant info with image */}
-          <View style={styles.restaurantInfo}>
-            <View style={styles.restaurantImageContainer}>
-              {restaurant?.imageUrl ? (
-                <Image 
-                  source={{ uri: restaurant.imageUrl }} 
-                  style={styles.restaurantImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.placeholderImage}>
-                  <Text style={styles.placeholderText}>🍽️</Text>
-                </View>
-              )}
-            </View>
+          {/* Restaurant hero section with background image */}
+          <View style={styles.heroSection}>
+            {restaurant?.imageUrl ? (
+              <Image 
+                source={{ uri: restaurant.imageUrl }} 
+                style={styles.heroBackgroundImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.heroPlaceholder}>
+                <Text style={styles.heroPlaceholderText}>🍽️</Text>
+              </View>
+            )}
             
-            <View style={styles.restaurantDetails}>
-              <Text style={styles.restaurantName}>{restaurant?.name}</Text>
-              <Text style={styles.deal}>🔥 -{restaurant?.discountPercentage}% off food</Text>
-              
-              {/* Rating and Price */}
-              <View style={styles.ratingPriceRow}>
-                <View style={styles.ratingContainer}>
-                  <Text style={styles.ratingText}>⭐ {restaurant?.rating || '4.5'}</Text>
+            {/* Gradient overlay for better text readability */}
+            <LinearGradient
+              colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.6)']}
+              style={styles.heroOverlay}
+            />
+            
+            {/* Restaurant details overlaid on image */}
+            <View style={styles.heroContent}>
+              {/* Badges row */}
+              <View style={styles.badgesRow}>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>🔥 {restaurant?.discountPercentage}% OFF</Text>
                 </View>
-                <View style={styles.priceContainer}>
-                  <Text style={styles.priceText}>{restaurant?.priceRange || '$$'}</Text>
-                </View>
+                {restaurant?.rating && (
+                  <View style={styles.ratingBadge}>
+                    <Text style={styles.ratingBadgeText}>⭐ {restaurant.rating}</Text>
+                  </View>
+                )}
               </View>
               
-              {/* Full Address */}
-              <Text style={styles.address}>{restaurant?.address || restaurant?.location}</Text>
+              {/* Restaurant name */}
+              <Text style={styles.heroRestaurantName}>{restaurant?.name}</Text>
+              
+              {/* Location with icon */}
+              <View style={styles.locationRow}>
+                <Text style={styles.locationIcon}>📍</Text>
+                <Text style={styles.heroLocation}>{restaurant?.address || restaurant?.location}</Text>
+              </View>
+              
+              {/* Cuisine and price info */}
+              <View style={styles.cuisinePriceRow}>
+                <View style={styles.cuisineContainer}>
+                  <Text style={styles.cuisineIcon}>🍴</Text>
+                  <Text style={styles.cuisineText}>{restaurant?.cuisine || 'Restaurant'}</Text>
+                </View>
+                <Text style={styles.cuisineSeparator}>•</Text>
+                <Text style={styles.priceText}>Average price {restaurant?.priceRange || '$$'}</Text>
+              </View>
             </View>
           </View>
 
@@ -329,76 +349,122 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  restaurantInfo: {
-    marginBottom: 30,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  heroSection: {
+    height: 250, // Fixed height for the hero section
+    borderRadius: 15,
+    overflow: 'hidden',
+    marginBottom: 20,
+    position: 'relative',
   },
-  restaurantImageContainer: {
-    marginRight: 15,
+  heroBackgroundImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 15,
   },
-  restaurantImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
-  placeholderImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
+  heroPlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 15,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  placeholderText: {
+  heroPlaceholderText: {
     fontSize: 32,
   },
-  restaurantDetails: {
-    flex: 1,
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 15,
   },
-  restaurantName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
+  heroContent: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    zIndex: 1,
   },
-  deal: {
-    fontSize: 14,
-    color: '#ff3b30',
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  ratingPriceRow: {
+  badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 5,
   },
-  ratingContainer: {
-    backgroundColor: '#f8f9fa',
+  badge: {
+    backgroundColor: '#ff3b30',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    marginRight: 10,
+    marginRight: 8,
   },
-  ratingText: {
+  badgeText: {
+    color: 'white',
     fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: 'bold',
   },
-  priceContainer: {
-    backgroundColor: '#f8f9fa',
+  ratingBadge: {
+    backgroundColor: '#4CAF50',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+  },
+  ratingBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  heroRestaurantName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 5,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  locationIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  heroLocation: {
+    fontSize: 14,
+    color: 'white',
+    marginBottom: 5,
+  },
+  cuisinePriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cuisineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  cuisineIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  cuisineText: {
+    fontSize: 12,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  cuisineSeparator: {
+    fontSize: 14,
+    color: 'white',
+    marginHorizontal: 5,
   },
   priceText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-  },
-  address: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
+    fontSize: 14,
+    color: 'white',
+    fontWeight: 'bold',
   },
   section: {
     marginBottom: 25,
