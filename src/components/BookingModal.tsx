@@ -248,20 +248,22 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
 
           {/* Date Selection */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Date</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {dateOptions.map(date => (
-                <Pressable
-                  key={date.value}
-                  style={[styles.dateButton, selectedDate === date.value && styles.dateButtonSelected]}
-                  onPress={() => setSelectedDate(date.value)}
-                >
-                  <Text style={[styles.dateButtonText, selectedDate === date.value && styles.dateButtonTextSelected]}>
-                    {date.display}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            <Text style={styles.dateSectionTitle}>Date</Text>
+            <View style={styles.datePillsContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {dateOptions.map(date => (
+                  <Pressable
+                    key={date.value}
+                    style={[styles.dateButton, selectedDate === date.value && styles.dateButtonSelected]}
+                    onPress={() => setSelectedDate(date.value)}
+                  >
+                    <Text style={[styles.dateButtonText, selectedDate === date.value && styles.dateButtonTextSelected]}>
+                      {date.display}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
           </View>
 
           {/* Time slots */}
@@ -429,13 +431,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
   },
   section: {
-    marginBottom: 25,
+    marginBottom: 15,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 16,
@@ -548,5 +550,14 @@ const styles = StyleSheet.create({
   },
   dateButtonTextSelected: {
     color: 'white',
+  },
+  dateSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
+  },
+  datePillsContainer: {
+    // Add any specific styles for the container if needed
   },
 }); 
