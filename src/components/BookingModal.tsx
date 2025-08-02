@@ -209,38 +209,40 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
               style={styles.heroOverlay}
             />
             
-            {/* Restaurant details overlaid on image */}
+            {/* Only restaurant name overlaid on image */}
             <View style={styles.heroContent}>
-              {/* Badges row */}
-              <View style={styles.badgesRow}>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>🔥 {restaurant?.discountPercentage}% OFF</Text>
-                </View>
-                {restaurant?.rating && (
-                  <View style={styles.ratingBadge}>
-                    <Text style={styles.ratingBadgeText}>⭐ {restaurant.rating}</Text>
-                  </View>
-                )}
-              </View>
-              
-              {/* Restaurant name */}
               <Text style={styles.heroRestaurantName}>{restaurant?.name}</Text>
-              
-              {/* Location with icon */}
-              <View style={styles.locationRow}>
-                <Text style={styles.locationIcon}>📍</Text>
-                <Text style={styles.heroLocation}>{restaurant?.address || restaurant?.location}</Text>
+            </View>
+          </View>
+
+          {/* Restaurant details section underneath */}
+          <View style={styles.detailsSection}>
+            {/* Badges row */}
+            <View style={styles.badgesRow}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>🔥 {restaurant?.discountPercentage}% OFF</Text>
               </View>
-              
-              {/* Cuisine and price info */}
-              <View style={styles.cuisinePriceRow}>
-                <View style={styles.cuisineContainer}>
-                  <Text style={styles.cuisineIcon}>🍴</Text>
-                  <Text style={styles.cuisineText}>{restaurant?.cuisine || 'Restaurant'}</Text>
+              {restaurant?.rating && (
+                <View style={styles.ratingBadge}>
+                  <Text style={styles.ratingBadgeText}>⭐ {restaurant.rating}</Text>
                 </View>
-                <Text style={styles.cuisineSeparator}>•</Text>
-                <Text style={styles.priceText}>Average price {restaurant?.priceRange || '$$'}</Text>
+              )}
+            </View>
+            
+            {/* Location with icon */}
+            <View style={styles.locationRow}>
+              <Text style={styles.locationIcon}>📍</Text>
+              <Text style={styles.locationText}>{restaurant?.address || restaurant?.location}</Text>
+            </View>
+            
+            {/* Cuisine and price info */}
+            <View style={styles.cuisinePriceRow}>
+              <View style={styles.cuisineContainer}>
+                <Text style={styles.cuisineIcon}>🍴</Text>
+                <Text style={styles.cuisineText}>{restaurant?.cuisine || 'Restaurant'}</Text>
               </View>
+              <Text style={styles.cuisineSeparator}>•</Text>
+              <Text style={styles.priceText}>Average price {restaurant?.priceRange || '$$'}</Text>
             </View>
           </View>
 
@@ -386,10 +388,16 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 1,
   },
+  detailsSection: {
+    backgroundColor: '#f9f9f9',
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 20,
+  },
   badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 12,
   },
   badge: {
     backgroundColor: '#ff3b30',
@@ -423,16 +431,16 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   locationIcon: {
     fontSize: 14,
     marginRight: 4,
   },
-  heroLocation: {
+  locationText: {
     fontSize: 14,
-    color: 'white',
-    marginBottom: 5,
+    color: '#333',
+    flex: 1,
   },
   cuisinePriceRow: {
     flexDirection: 'row',
@@ -441,7 +449,7 @@ const styles = StyleSheet.create({
   cuisineContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#e9ecef',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -453,17 +461,17 @@ const styles = StyleSheet.create({
   },
   cuisineText: {
     fontSize: 12,
-    color: 'white',
+    color: '#333',
     fontWeight: 'bold',
   },
   cuisineSeparator: {
     fontSize: 14,
-    color: 'white',
+    color: '#666',
     marginHorizontal: 5,
   },
   priceText: {
     fontSize: 14,
-    color: 'white',
+    color: '#333',
     fontWeight: 'bold',
   },
   section: {
