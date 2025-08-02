@@ -14,8 +14,52 @@ interface BookingModalProps {
 export default function BookingModal({ visible, restaurant, selectedTime: initialTime, onClose, onBook }: BookingModalProps) {
   const [selectedTime, setSelectedTime] = useState(initialTime || '');
   const [guests, setGuests] = useState(2);
-  const [selectedDate, setSelectedDate] = useState('Today');
+  const [selectedDate, setSelectedDate] = useState('');
   const [isBooking, setIsBooking] = useState(false);
+
+  // Generate next 7 days
+  const generateDateOptions = () => {
+    const dates = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      const dayName = dayNames[date.getDay()];
+      const month = monthNames[date.getMonth()];
+      const day = date.getDate();
+      
+      let displayText = '';
+      if (i === 0) {
+        displayText = `Today (${dayName})`;
+      } else if (i === 1) {
+        displayText = `Tomorrow (${dayName})`;
+      } else {
+        displayText = `${dayName} (${month} ${day})`;
+      }
+      
+      dates.push({
+        display: displayText,
+        value: date.toISOString().split('T')[0], // YYYY-MM-DD format
+        isToday: i === 0
+      });
+    }
+    
+    return dates;
+  };
+
+  const dateOptions = generateDateOptions();
+
+  // Set default date to today
+  useEffect(() => {
+    if (dateOptions.length > 0 && !selectedDate) {
+      setSelectedDate(dateOptions[0].value);
+    }
+  }, []);
 
   // Update selected time when initialTime prop changes
   useEffect(() => {
@@ -28,12 +72,15 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
   const guestOptions = [1, 2, 3, 4, 5, 6];
 
   const handleBook = async () => {
-    if (!selectedTime) return;
+    if (!selectedTime || !selectedDate) return;
     
     setIsBooking(true);
     
     try {
-      // Create booking object
+      // Generate booking number
+      const bookingNumber = `VB-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+      
+      // Create booking object (commission tracked internally, not shown to user)
       const bookingData = {
         restaurantId: restaurant.id,
         restaurantName: restaurant.name,
@@ -42,11 +89,12 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
         date: selectedDate,
         guests,
         discountPercentage: restaurant.discountPercentage,
-        status: 'pending', // pending, confirmed, cancelled
+        status: 'confirmed', // Direct confirmation for better UX
         createdAt: new Date(),
-        commission: calculateCommission(restaurant.discountPercentage),
+        commission: 3.00, // Internal tracking only
         userId: 'anonymous', // We'll add user auth later
-        userEmail: 'guest@example.com' // We'll add user auth later
+        userEmail: 'guest@example.com', // We'll add user auth later
+        bookingNumber: bookingNumber // Add booking number
       };
 
       // Try to save to Firebase (with timeout)
@@ -57,18 +105,23 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
             setTimeout(() => reject(new Error('Firebase timeout')), 5000)
           )
         ]);
-        console.log('Booking saved to Firebase:', docRef.id);
+        console.log('✅ Booking saved to Firebase:', docRef.id);
       } catch (firebaseError) {
         console.log('Firebase not ready, using console log for now:', firebaseError);
         // Fallback: just log the booking for now
-        console.log('Local booking data:', bookingData);
+        console.log('📝 Local booking data:', bookingData);
       }
       
       // Close modal and show success
       onClose();
+      
+      // Format date for display
+      const selectedDateObj = dateOptions.find(d => d.value === selectedDate);
+      const displayDate = selectedDateObj ? selectedDateObj.display : selectedDate;
+      
       Alert.alert(
         '🎉 Booking Confirmed!',
-        `Your table at ${restaurant.name} is reserved for ${selectedDate} at ${selectedTime}.\n\nYou saved -${restaurant.discountPercentage}%!`,
+        `Your table at ${restaurant.name} is reserved!\n\n📅 ${displayDate}\n🕐 ${selectedTime}\n👥 ${guests} ${guests === 1 ? 'guest' : 'guests'}\n\nBooking #: ${bookingNumber}`,
         [{ text: 'OK' }]
       );
       
@@ -76,16 +129,16 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
       onBook(bookingData);
       
     } catch (error) {
-      console.error('Booking error:', error);
+      console.error('❌ Booking error:', error);
       Alert.alert('Error', 'Failed to create booking. Please try again.');
     } finally {
       setIsBooking(false);
     }
   };
 
-  const calculateCommission = (discountPercentage: number) => {
-    // Flat $3 commission per booking
-    return 3;
+  const getSelectedDateDisplay = () => {
+    const selected = dateOptions.find(d => d.value === selectedDate);
+    return selected ? selected.display : 'Select Date';
   };
 
   return (
@@ -103,7 +156,7 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
           {/* Restaurant info */}
           <View style={styles.restaurantInfo}>
             <Text style={styles.restaurantName}>{restaurant?.name}</Text>
-            <Text style={styles.deal}>🔥 {restaurant?.discount}</Text>
+            <Text style={styles.deal}>🔥 -{restaurant?.discountPercentage}% off food</Text>
             <Text style={styles.location}>{restaurant?.location}</Text>
           </View>
 
@@ -129,14 +182,14 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Date</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {['Today', 'Tomorrow', 'This Weekend'].map(date => (
+              {dateOptions.map(date => (
                 <Pressable
-                  key={date}
-                  style={[styles.dateButton, selectedDate === date && styles.dateButtonSelected]}
-                  onPress={() => setSelectedDate(date)}
+                  key={date.value}
+                  style={[styles.dateButton, selectedDate === date.value && styles.dateButtonSelected]}
+                  onPress={() => setSelectedDate(date.value)}
                 >
-                  <Text style={[styles.dateButtonText, selectedDate === date && styles.dateButtonTextSelected]}>
-                    {date}
+                  <Text style={[styles.dateButtonText, selectedDate === date.value && styles.dateButtonTextSelected]}>
+                    {date.display}
                   </Text>
                 </Pressable>
               ))}
@@ -145,7 +198,7 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
 
           {/* Time slots */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Available Times - {selectedDate}</Text>
+            <Text style={styles.sectionTitle}>Available Times - {getSelectedDateDisplay()}</Text>
             <View style={styles.timeGrid}>
               {timeSlots.map(time => (
                 <Pressable
@@ -156,9 +209,6 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
                   <Text style={[styles.timeButtonText, selectedTime === time && styles.timeButtonTextSelected]}>
                     {time}
                   </Text>
-                  <Text style={[styles.menuLabel, selectedTime === time && styles.menuLabelSelected]}>
-                    DISCOUNT
-                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -166,12 +216,12 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
 
           {/* Book button */}
           <Pressable 
-            style={[styles.bookButton, (!selectedTime || isBooking) && styles.bookButtonDisabled]}
+            style={[styles.bookButton, (!selectedTime || !selectedDate || isBooking) && styles.bookButtonDisabled]}
             onPress={handleBook}
-            disabled={!selectedTime || isBooking}
+            disabled={!selectedTime || !selectedDate || isBooking}
           >
             <Text style={styles.bookButtonText}>
-              {isBooking ? 'Creating Booking...' : `Reserve for ${guests} ${guests === 1 ? 'guest' : 'guests'} at ${selectedTime || '--:--'}`}
+              {isBooking ? 'Creating Booking...' : `Reserve Table`}
             </Text>
           </Pressable>
         </ScrollView>
