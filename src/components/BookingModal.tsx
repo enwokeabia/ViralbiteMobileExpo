@@ -558,6 +558,6 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   datePillsContainer: {
-    // Add any specific styles for the container if needed
+    marginBottom: 8,
   },
 }); 
