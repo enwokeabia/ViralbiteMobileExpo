@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable, ScrollView, Alert, Image } from 'react-native';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { getTimeSlots, createBooking } from '../services/restaurantService';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface BookingModalProps {
   visible: boolean;
@@ -188,11 +189,39 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
         </View>
 
         <ScrollView style={styles.content}>
-          {/* Restaurant info */}
+          {/* Restaurant info with image */}
           <View style={styles.restaurantInfo}>
-            <Text style={styles.restaurantName}>{restaurant?.name}</Text>
-            <Text style={styles.deal}>🔥 -{restaurant?.discountPercentage}% off food</Text>
-            <Text style={styles.location}>{restaurant?.location}</Text>
+            <View style={styles.restaurantImageContainer}>
+              {restaurant?.imageUrl ? (
+                <Image 
+                  source={{ uri: restaurant.imageUrl }} 
+                  style={styles.restaurantImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.placeholderImage}>
+                  <Text style={styles.placeholderText}>🍽️</Text>
+                </View>
+              )}
+            </View>
+            
+            <View style={styles.restaurantDetails}>
+              <Text style={styles.restaurantName}>{restaurant?.name}</Text>
+              <Text style={styles.deal}>🔥 -{restaurant?.discountPercentage}% off food</Text>
+              
+              {/* Rating and Price */}
+              <View style={styles.ratingPriceRow}>
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingText}>⭐ {restaurant?.rating || '4.5'}</Text>
+                </View>
+                <View style={styles.priceContainer}>
+                  <Text style={styles.priceText}>{restaurant?.priceRange || '$$'}</Text>
+                </View>
+              </View>
+              
+              {/* Full Address */}
+              <Text style={styles.address}>{restaurant?.address || restaurant?.location}</Text>
+            </View>
           </View>
 
           {/* Guest count */}
@@ -258,9 +287,14 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
             onPress={handleBook}
             disabled={!selectedTime || !selectedDate || isBooking}
           >
-            <Text style={styles.bookButtonText}>
-              {isBooking ? 'Creating Booking...' : `Reserve Table`}
-            </Text>
+            <LinearGradient
+              colors={['#8B5CF6', '#7C3AED']}
+              style={[styles.bookButtonGradient, (!selectedTime || !selectedDate || isBooking) && styles.bookButtonGradientDisabled]}
+            >
+              <Text style={styles.bookButtonText}>
+                {isBooking ? 'Creating Booking...' : `Reserve Table`}
+              </Text>
+            </LinearGradient>
           </Pressable>
         </ScrollView>
       </View>
@@ -297,43 +331,97 @@ const styles = StyleSheet.create({
   },
   restaurantInfo: {
     marginBottom: 30,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  restaurantImageContainer: {
+    marginRight: 15,
+  },
+  restaurantImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
+  placeholderImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 32,
+  },
+  restaurantDetails: {
+    flex: 1,
   },
   restaurantName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   deal: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#ff3b30',
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 8,
   },
-  location: {
-    fontSize: 14,
+  ratingPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ratingContainer: {
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  ratingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+  },
+  priceContainer: {
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  priceText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+  },
+  address: {
+    fontSize: 13,
     color: '#666',
+    lineHeight: 18,
   },
   section: {
-    marginBottom: 30,
+    marginBottom: 25,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   guestButton: {
     backgroundColor: '#f5f5f5',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginRight: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    marginRight: 8,
   },
   guestButtonSelected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#8B5CF6',
   },
   guestButtonText: {
     color: '#333',
     fontWeight: '500',
+    fontSize: 14,
   },
   guestButtonTextSelected: {
     color: 'white',
@@ -341,46 +429,42 @@ const styles = StyleSheet.create({
   timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
   timeButton: {
     backgroundColor: '#f5f5f5',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    minWidth: 80,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    minWidth: 70,
     alignItems: 'center',
   },
   timeButtonSelected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#8B5CF6',
   },
   timeButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
   },
   timeButtonTextSelected: {
     color: 'white',
   },
-  menuLabel: {
-    fontSize: 10,
-    color: '#666',
-    marginTop: 2,
-    fontWeight: 'bold',
-  },
-  menuLabelSelected: {
-    color: 'white',
-  },
   bookButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 18,
-    borderRadius: 10,
-    alignItems: 'center',
     marginTop: 20,
     marginBottom: 40,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  bookButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  bookButtonGradientDisabled: {
+    opacity: 0.5,
   },
   bookButtonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.5,
   },
   bookButtonText: {
     color: 'white',
@@ -389,17 +473,18 @@ const styles = StyleSheet.create({
   },
   dateButton: {
     backgroundColor: '#f5f5f5',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginRight: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    marginRight: 8,
   },
   dateButtonSelected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#8B5CF6',
   },
   dateButtonText: {
     color: '#333',
     fontWeight: '500',
+    fontSize: 14,
   },
   dateButtonTextSelected: {
     color: 'white',
