@@ -226,21 +226,23 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
 
           {/* Guest count */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Number of Guests</Text>
-            <View style={styles.guestSelector}>
-              <Pressable
-                style={styles.guestButton}
-                onPress={() => setGuests(Math.max(1, guests - 1))}
-              >
-                <Text style={styles.guestButtonText}>−</Text>
-              </Pressable>
-              <Text style={styles.guestCount}>{guests}</Text>
-              <Pressable
-                style={styles.guestButton}
-                onPress={() => setGuests(Math.min(8, guests + 1))}
-              >
-                <Text style={styles.guestButtonText}>+</Text>
-              </Pressable>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Number of Guests</Text>
+              <View style={styles.guestSelector}>
+                <Pressable
+                  style={styles.guestButton}
+                  onPress={() => setGuests(Math.max(1, guests - 1))}
+                >
+                  <Text style={styles.guestButtonText}>−</Text>
+                </Pressable>
+                <Text style={styles.guestCount}>{guests}</Text>
+                <Pressable
+                  style={styles.guestButton}
+                  onPress={() => setGuests(Math.min(8, guests + 1))}
+                >
+                  <Text style={styles.guestButtonText}>+</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
 
@@ -429,28 +431,16 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 25,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  guestButton: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  guestButtonSelected: {
-    backgroundColor: '#8B5CF6',
-  },
-  guestButtonText: {
     color: '#333',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  guestButtonTextSelected: {
-    color: 'white',
   },
   guestSelector: {
     flexDirection: 'row',
@@ -462,6 +452,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignSelf: 'center',
     width: 120,
+  },
+  guestButton: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  guestButtonSelected: {
+    backgroundColor: '#8B5CF6',
+  },
+  guestButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  guestButtonTextSelected: {
+    color: 'white',
   },
   guestCount: {
     fontSize: 16,
