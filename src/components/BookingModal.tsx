@@ -227,19 +227,21 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
           {/* Guest count */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Number of Guests</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {guestOptions.map(count => (
-                <Pressable
-                  key={count}
-                  style={[styles.guestButton, guests === count && styles.guestButtonSelected]}
-                  onPress={() => setGuests(count)}
-                >
-                  <Text style={[styles.guestButtonText, guests === count && styles.guestButtonTextSelected]}>
-                    {count} {count === 1 ? 'guest' : 'guests'}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            <View style={styles.guestSelector}>
+              <Pressable
+                style={styles.guestButton}
+                onPress={() => setGuests(Math.max(1, guests - 1))}
+              >
+                <Text style={styles.guestButtonText}>−</Text>
+              </Pressable>
+              <Text style={styles.guestCount}>{guests}</Text>
+              <Pressable
+                style={styles.guestButton}
+                onPress={() => setGuests(Math.min(8, guests + 1))}
+              >
+                <Text style={styles.guestButtonText}>+</Text>
+              </Pressable>
+            </View>
           </View>
 
           {/* Date Selection */}
@@ -266,18 +268,47 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
               Available Times - {getSelectedDateDisplay()}
               {isLoadingSlots && ' (Loading...)'}
             </Text>
-            <View style={styles.timeGrid}>
-              {availableTimeSlots.map(time => (
-                <Pressable
-                  key={time}
-                  style={[styles.timeButton, selectedTime === time && styles.timeButtonSelected]}
-                  onPress={() => setSelectedTime(time)}
-                >
-                  <Text style={[styles.timeButtonText, selectedTime === time && styles.timeButtonTextSelected]}>
-                    {time}
-                  </Text>
-                </Pressable>
-              ))}
+            
+            {/* Lunch Section */}
+            <View style={styles.timeSection}>
+              <Text style={styles.timeSectionTitle}>Lunch</Text>
+              <View style={styles.timeGrid}>
+                {availableTimeSlots.filter(time => {
+                  const hour = parseInt(time.split(':')[0]);
+                  return hour >= 11 && hour <= 16;
+                }).map(time => (
+                  <Pressable
+                    key={time}
+                    style={[styles.timeButton, selectedTime === time && styles.timeButtonSelected]}
+                    onPress={() => setSelectedTime(time)}
+                  >
+                    <Text style={[styles.timeButtonText, selectedTime === time && styles.timeButtonTextSelected]}>
+                      {time}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            {/* Dinner Section */}
+            <View style={styles.timeSection}>
+              <Text style={styles.timeSectionTitle}>Dinner</Text>
+              <View style={styles.timeGrid}>
+                {availableTimeSlots.filter(time => {
+                  const hour = parseInt(time.split(':')[0]);
+                  return hour >= 17 || hour <= 10;
+                }).map(time => (
+                  <Pressable
+                    key={time}
+                    style={[styles.timeButton, selectedTime === time && styles.timeButtonSelected]}
+                    onPress={() => setSelectedTime(time)}
+                  >
+                    <Text style={[styles.timeButtonText, selectedTime === time && styles.timeButtonTextSelected]}>
+                      {time}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           </View>
 
@@ -333,15 +364,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   restaurantName: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '900',
     color: '#333',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 12,
   },
   locationIcon: {
     fontSize: 14,
@@ -349,7 +380,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 14,
-    color: '#666',
+    color: '#999',
   },
   detailsRow: {
     flexDirection: 'row',
@@ -421,6 +452,20 @@ const styles = StyleSheet.create({
   guestButtonTextSelected: {
     color: 'white',
   },
+  guestSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  guestCount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
   timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -444,6 +489,16 @@ const styles = StyleSheet.create({
   },
   timeButtonTextSelected: {
     color: 'white',
+  },
+  timeSection: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  timeSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#333',
   },
   bookButton: {
     marginTop: 20,
