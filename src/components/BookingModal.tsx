@@ -455,11 +455,13 @@ const styles = StyleSheet.create({
   guestSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 16,
     paddingVertical: 4,
     paddingHorizontal: 10,
+    alignSelf: 'center',
+    width: 120,
   },
   guestCount: {
     fontSize: 16,
