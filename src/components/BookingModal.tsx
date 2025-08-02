@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, ScrollView, Alert } from 'react-native';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { getTimeSlots, createBooking } from '../services/restaurantService';
 
 interface BookingModalProps {
   visible: boolean;
@@ -16,6 +17,8 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
   const [guests, setGuests] = useState(2);
   const [selectedDate, setSelectedDate] = useState('');
   const [isBooking, setIsBooking] = useState(false);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   // Generate next 7 days
   const generateDateOptions = () => {
@@ -68,7 +71,41 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
     }
   }, [initialTime]);
 
-  const timeSlots = ['12:00', '12:30', '13:00', '13:30', '18:00', '18:30', '19:00', '19:30'];
+  // Load time slots when date changes
+  useEffect(() => {
+    if (selectedDate && restaurant?.id) {
+      loadTimeSlots();
+    }
+  }, [selectedDate, restaurant?.id]);
+
+  const loadTimeSlots = async () => {
+    if (!selectedDate || !restaurant?.id) return;
+    
+    setIsLoadingSlots(true);
+    try {
+      const timeSlots = await getTimeSlots(restaurant.id, selectedDate);
+      const times = timeSlots.map(slot => slot.time);
+      
+      // If no time slots found, use default times
+      if (times.length === 0) {
+        setAvailableTimeSlots(['12:00', '12:30', '13:00', '13:30', '18:00', '18:30', '19:00', '19:30']);
+      } else {
+        setAvailableTimeSlots(times);
+      }
+      
+      // Reset selected time if it's not available for this date
+      if (selectedTime && !times.includes(selectedTime)) {
+        setSelectedTime('');
+      }
+    } catch (error) {
+      console.error('Error loading time slots:', error);
+      // Fallback to default times
+      setAvailableTimeSlots(['12:00', '12:30', '13:00', '13:30', '18:00', '18:30', '19:00', '19:30']);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+
   const guestOptions = [1, 2, 3, 4, 5, 6];
 
   const handleBook = async () => {
@@ -87,25 +124,23 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
         restaurantLocation: restaurant.location,
         time: selectedTime,
         date: selectedDate,
-        guests,
+        guestCount: guests,
         discountPercentage: restaurant.discountPercentage,
-        status: 'confirmed', // Direct confirmation for better UX
-        createdAt: new Date(),
+        status: 'confirmed' as const, // Direct confirmation for better UX
         commission: 3.00, // Internal tracking only
         userId: 'anonymous', // We'll add user auth later
         userEmail: 'guest@example.com', // We'll add user auth later
         bookingNumber: bookingNumber // Add booking number
       };
 
-      // Try to save to Firebase (with timeout)
+      // Try to save to Firebase using the service
       try {
-        const docRef = await Promise.race([
-          addDoc(collection(db, 'bookings'), bookingData),
-          new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('Firebase timeout')), 5000)
-          )
-        ]);
-        console.log('✅ Booking saved to Firebase:', docRef.id);
+        const bookingId = await createBooking(bookingData);
+        if (bookingId) {
+          console.log('✅ Booking saved to Firebase:', bookingId);
+        } else {
+          console.log('📝 Local booking data:', bookingData);
+        }
       } catch (firebaseError) {
         console.log('Firebase not ready, using console log for now:', firebaseError);
         // Fallback: just log the booking for now
@@ -198,9 +233,12 @@ export default function BookingModal({ visible, restaurant, selectedTime: initia
 
           {/* Time slots */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Available Times - {getSelectedDateDisplay()}</Text>
+            <Text style={styles.sectionTitle}>
+              Available Times - {getSelectedDateDisplay()}
+              {isLoadingSlots && ' (Loading...)'}
+            </Text>
             <View style={styles.timeGrid}>
-              {timeSlots.map(time => (
+              {availableTimeSlots.map(time => (
                 <Pressable
                   key={time}
                   style={[styles.timeButton, selectedTime === time && styles.timeButtonSelected]}
